@@ -1,31 +1,36 @@
-#include "gtest/gtest.h"
-#include "foo.h"
-
 #include <array>
 #include <boost/numeric/odeint.hpp>
 #include <cmath>
 #include <Eigen/Dense>
 #include <iostream>
 #include <utility>
+#include "gtest/gtest.h"
 #include "dynamic_system.hpp"
 
 namespace dynamics {
+
+// Foward declaration, REQUIRED for template code to work
 class RollingDisc;
 
-template <> struct Derived_traits<RollingDisc> {
-  using state_type = std::array<double, 6>;
-  using output_type = std::array<double, 2>;  // To hold KE and PE
+// Template specialization of traits class to define the state type and the
+// output type
+template <> struct DynamicSystem_traits<RollingDisc> {
+  using state_type = std::array<double, 6>;   // Container for states
+  using output_type = std::array<double, 3>;  // Container for KE, PE, KE + PE
 };
 
+// Rolling disc class that uses curiously recurring template patter to inherit
+// from DynamicSystem<RollingDisc>.  This is a way to get static polymorphism.
 class RollingDisc : public DynamicSystem<RollingDisc> {
  public:
-  using state_type = Derived_traits<RollingDisc>::state_type;
-  using output_type = Derived_traits<RollingDisc>::output_type;
+  // Convenience typedefs for the state type and the output type
+  using state_type = DynamicSystem_traits<RollingDisc>::state_type;
+  using output_type = DynamicSystem_traits<RollingDisc>::output_type;
 
   RollingDisc(double m = 1.0, double g = 1.0, double r = 1.0)
     : m_{m}, g_{g}, r_{r} {}
 
-  /* State ordering
+  /* Function which computes state derivatives. State ordering is:
     q1 = x[0] // yaw 
     q2 = x[1] // lean
     q3 = x[2] // spin
@@ -45,9 +50,13 @@ class RollingDisc : public DynamicSystem<RollingDisc> {
     dxdt[5] = -(2*x[4] - x[5]*tan(x[1]))*x[3];
   }
 
+  // Function which computes outputs
   output_type outputs(const state_type & x, const double t)
   {
-    return {{1.0*t, 2.0*t*t}};
+    double ke, pe;
+    ke = (1.0/8.0)*m_*pow(r_, 2)*(5*pow(x[3], 2) + 6*pow(x[4], 2) + pow(x[5], 2));
+    pe = g_*m_*r_*(cos(x[1]) - 1);
+    return {{ke, pe, ke+pe}};
   }
 
  private:
@@ -72,14 +81,14 @@ TEST(DynamicSystem, TrueEqualsTrue)
 {
   using namespace dynamics;
   RollingDisc kane;
-  RollingDisc::state_type xi_kane = {{0.0, -0.01, 0.0, 0.0, 0.0, 0.4116}};
+  RollingDisc::state_type xi_kane = {{0.0, 0.0, 0.0, 0.01, 0.0, 0.4116}};
   std::vector<RollingDisc::state_type> x_kane;
   std::vector<double> t_kane;
   size_t steps;
-  std::tie(x_kane, t_kane, steps) = kane.simulate(xi_kane, 0.0, 10.0, 0.01);
+  std::tie(x_kane, t_kane, steps) = kane.simulate(xi_kane, 0.0, 1.0, 0.1);
   print_trajectory(x_kane, t_kane);
   std::vector<RollingDisc::output_type> y_kane;
-  std::tie(x_kane, t_kane, steps, y_kane) = kane.simulate_outputs(xi_kane, 0.0, 10.0, 0.01);
+  std::tie(x_kane, t_kane, steps, y_kane) = kane.simulate_outputs(xi_kane, 0.0, 1.0, 0.1);
   print_trajectory(y_kane, t_kane);
 }
 

@@ -12,22 +12,24 @@
 namespace dynamics {
 
 // Declare templated traits class for Derived
-template<typename Derived> struct Derived_traits {};
+template<typename Derived> struct DynamicSystem_traits {};
 
 template <class Derived>
 class DynamicSystem {
 public:
-  using st = typename Derived_traits<Derived>::state_type;
-  using ot = typename Derived_traits<Derived>::output_type;
+  using st = typename DynamicSystem_traits<Derived>::state_type;
+  using ot = typename DynamicSystem_traits<Derived>::output_type;
 
   std::tuple<std::vector<st>, std::vector<double>, size_t>
   simulate(const st & xi, double ti, double tf, double ts)
   {
+    using namespace boost::numeric::odeint;
     std::vector<st> x;
     std::vector<double> t;
     st xi_ = xi;
-    size_t steps = boost::numeric::odeint::integrate(
-        *static_cast<Derived *>(this), xi_, ti, tf, ts, state_observer(x, t));
+    size_t steps = integrate_const(
+            make_controlled(1.0e-8, 1.0e-8, runge_kutta_fehlberg78<st>()),
+            *static_cast<Derived *>(this), xi_, ti, tf, ts, state_observer(x, t));
 
     return std::make_tuple(x, t, steps);
   }
@@ -35,13 +37,16 @@ public:
   std::tuple<std::vector<st>, std::vector<double>, size_t, std::vector<ot>>
   simulate_outputs(const st & xi, double ti, double tf, double ts)
   {
+    using namespace boost::numeric::odeint;
     std::vector<st> x;
     std::vector<double> t;
     std::vector<ot> y;
     st xi_ = xi;
-    size_t steps = boost::numeric::odeint::integrate(
-        *static_cast<Derived *>(this), xi_, ti, tf, ts,
-        output_observer(x, t, y, *static_cast<Derived *>(this)));
+
+    size_t steps = integrate_const(
+            make_controlled(1.0e-8, 1.0e-8, runge_kutta_fehlberg78<st>()),
+            *static_cast<Derived *>(this), xi_, ti, tf, ts,
+            output_observer(x, t, y, *static_cast<Derived *>(this)));
 
     return std::make_tuple(x, t, steps, y);
   }
