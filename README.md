@@ -1,19 +1,17 @@
-CMake + Googletest C++ project template
-=======================================
+Dynamic System simulator for C++
+================================
 
-This project provides the following structure
+As of Boost 1.53.0, Boost.odeint is available to integrate ODE's in C++. This
+package provides a simple template class `dynamics::DynamicSystem` that is
+designed to be subclassed using the curiously recurring template pattern
+(CTRP). The class allows you to easily simulate the ODE's for a given set of
+initial conditions, and also makes it very easy to compute output quantities
+(i.e., functions of the states and possibly time) during simulation (as opposed
+to after the simulation).
 
-    .
-    |-cmake
-    |---Modules
-    |-googletest
-    |-include
-    |-source
-    |---tests
-
-I found myself rewriting a lot of boilerplate code so I thought I would put
-this all together as a starting point for C++ projects that use CMake and
-Googletest.
+To see an an example of how to subclass from `DynamicSystem`, see the test in
+`./source/tests/test_disc.cc` which is for the rolling disc equations of
+motion.
 
 After cloning this repo, you need to do:
 
@@ -21,9 +19,7 @@ After cloning this repo, you need to do:
     $ git submodule update
 
 Which pulls the latest googletest submodule. After that, you can build the
-project, which consists of a minimal library and a minimal test. They dont'
-really do anything other than exercise the build and test system and serve as
-an example of how to add your own real code.
+project with
 
     $ mkdir build
     $ cd build

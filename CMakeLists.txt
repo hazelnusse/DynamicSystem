@@ -1,8 +1,8 @@
-project(PROJECT CXX)
+project(DYNAMICS CXX)
 cmake_minimum_required(VERSION 2.8)
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules)
+set(CMAKE_MODULE_PATH ${DYNAMICS_SOURCE_DIR}/cmake/Modules)
 
-option(PROJECT_BUILD_TESTS "Build tests." ON)
+option(DYNAMICS_BUILD_TESTS "Build tests." ON)
 set(BUILD_SHARED_LIBS ON)
 
 # Set g++ compiler flags if GNU C++ compiler is being used
@@ -22,18 +22,19 @@ else()
     message(FATAL_ERROR "g++ compiler is only supported compiler.")
 endif()
 
-
 # Put find_packages here
-#find_package(Eigen3 3.1.2)
-#include_directories(${EIGEN3_INCLUDE_DIR})
+find_package(Eigen3 3.1.2)
+include_directories(${EIGEN3_INCLUDE_DIR})
+find_package(Boost 1.53 REQUIRED)
+include_directories(${Boost_INCLUDE_DIRS})
 
-if (PROJECT_BUILD_TESTS)
+if (DYNAMICS_BUILD_TESTS)
   enable_testing()
-  include_directories(${PROJECT_SOURCE_DIR}/googletest)
-  include_directories(${PROJECT_SOURCE_DIR}/googletest/include)
+  include_directories(${DYNAMICS_SOURCE_DIR}/googletest)
+  include_directories(${DYNAMICS_SOURCE_DIR}/googletest/include)
   add_subdirectory(googletest)
 endif()
 
-include_directories(${PROJECT_SOURCE_DIR}/include)
-add_subdirectory(${PROJECT_SOURCE_DIR}/source)
+include_directories(${DYNAMICS_SOURCE_DIR}/include)
+add_subdirectory(${DYNAMICS_SOURCE_DIR}/source)
 

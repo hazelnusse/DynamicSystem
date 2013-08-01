@@ -1,5 +1,5 @@
-add_executable(test_foo test_foo.cc)
-target_link_libraries(test_foo gtest_main foo)
-add_test(NAME test_foo
-         COMMAND test_foo)
+add_executable(test_disc test_disc.cc)
+target_link_libraries(test_disc gtest_main)
+add_test(NAME test_disc
+         COMMAND test_disc)
 
