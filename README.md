@@ -9,7 +9,7 @@ initial conditions, and also makes it very easy to compute output quantities
 (i.e., functions of the states and possibly time) during simulation (as opposed
 to after the simulation).
 
-To see an an example of how to subclass from `DynamicSystem`, see the test in
+To see an example of how to subclass from `DynamicSystem`, see the test in
 `./source/tests/test_disc.cc` which is for the rolling disc equations of
 motion.
 
